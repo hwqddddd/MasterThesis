@@ -26,7 +26,7 @@
             "y": -118.307455
         },
         "demand": 48222.111000000004,
-        "due_time": 0,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 508.0
     },
@@ -36,7 +36,7 @@
             "y": -118.310726
         },
         "demand": 91510.161,
-        "due_time": 0,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 877.9999999999998
     },
@@ -76,7 +76,7 @@
             "y": -118.305092
         },
         "demand": 26680.049999999996,
-        "due_time": 0,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 171.89999999999998
     },
@@ -96,7 +96,7 @@
             "y": -118.304604
         },
         "demand": 10440.233999999999,
-        "due_time": 0,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 80.0
     },
@@ -116,7 +116,7 @@
             "y": -118.305645
         },
         "demand": 56516.102,
-        "due_time": 27000,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 383.0
     },
@@ -186,7 +186,7 @@
             "y": -118.310483
         },
         "demand": 59540.07399999999,
-        "due_time": 0,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 369.90000000000003
     },
@@ -206,7 +206,7 @@
             "y": -118.305773
         },
         "demand": 12514.240999999998,
-        "due_time": 27000,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 203.10000000000002
     },
@@ -236,7 +236,7 @@
             "y": -118.310287
         },
         "demand": 70428.329,
-        "due_time": 0,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 775.0
     },
@@ -316,7 +316,7 @@
             "y": -118.309711
         },
         "demand": 76970.845,
-        "due_time": 27000,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 270.0
     },
@@ -336,7 +336,7 @@
             "y": -118.308004
         },
         "demand": 55571.292,
-        "due_time": 27000,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 599.5
     },
@@ -356,7 +356,7 @@
             "y": -118.305786
         },
         "demand": 7741.314,
-        "due_time": 0,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 25.0
     },
@@ -416,8 +416,8 @@
             "y": -118.30949
         },
         "demand": 6282.387999999999,
-        "due_time": 0,
-        "ready_time": -3600,
+        "due_time": 86400,
+        "ready_time": 0,
         "service_time": 151.0
     },
     "customer_47": {
@@ -466,7 +466,7 @@
             "y": -118.306076
         },
         "demand": 9089.42,
-        "due_time": 0,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 168.0
     },
@@ -486,8 +486,8 @@
             "y": -118.310621
         },
         "demand": 354844.90599999996,
-        "due_time": 0,
-        "ready_time": -30600,
+        "due_time": 86400,
+        "ready_time": 0,
         "service_time": 1484.0000000000007
     },
     "customer_53": {
@@ -576,7 +576,7 @@
             "y": -118.305041
         },
         "demand": 118068.06799999998,
-        "due_time": 0,
+        "due_time": 86400,
         "ready_time": 1800,
         "service_time": 871.0000000000001
     },
@@ -4193,5 +4193,5 @@
     ],
     "instance_name": "A100",
     "route_ID": "RouteID_00575ca4-8a63-49d2-96c8-9b347be5ba6c",
-    "vehicle_capacity": 3313071.0
+    "vehicle_capacity": 1313071.0
 }
