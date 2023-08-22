@@ -231,7 +231,7 @@ class HMOEA(object):
         # self.ind_size = self.json_instance['Number_of_customers'] 
         self.pop_size = 100
         self.cross_prob = 0.85
-        self.mut_prob = 0.02
+        self.mut_prob = 0.1
         self.num_gen = 100
         self.toolbox = base.Toolbox()
         self.createCreators()
@@ -271,37 +271,39 @@ class HMOEA(object):
         # ref_points = tools.uniform_reference_points(nobj=5, p=12)
         self.pop = self.toolbox.select(self.pop, len(self.pop))
    
-    def runGenerations(self):
+    def runGenerations(self, S_M = True, L_S = True):
         # Running algorithm for given number of generations
         start_time = time.time()
         for _ in range(self.num_gen):
 
-            # Selecting individuals
-            # Selecting offsprings from the population, about 1/2 of them
             self.offspring = tools.selTournamentDCD(self.pop, len(self.pop))
             self.offspring = [self.toolbox.clone(ind) for ind in self.offspring]
 
-            # Performing , crossover and mutation operations according to their probabilities
-
             # Using similarity measure to selcet the lowest similarity individual from 5 ind to crossover
-            for ind1 in self.offspring:
-                simi = 1
-                for i in random.sample(self.offspring,5):
-                    temp = similarity(ind1, i)
-                    if temp < simi:
-                        simi = temp
-                        ind2 = i
-                if random.random() <= self.cross_prob:
-                    self.toolbox.mate(ind1, ind2)
 
-                    del ind1.fitness.values, ind2.fitness.values
-            # for ind1, ind2 in zip(self.offspring[::2], self.offspring[1::2]):
+            if S_M:
+                for ind1 in self.offspring:
+                    simi = 1
+                    for i in random.sample(self.offspring,5):
+                        temp = similarity(ind1, i)
+                        if temp < simi:
+                            simi = temp
+                            ind2 = i
+                    if random.random() <= self.cross_prob:
+                        self.toolbox.mate(ind1, ind2)
 
-            #     if random.random() <= self.cross_prob:
-            #         self.toolbox.mate(ind1, ind2)
-            #         del ind1.fitness.values, ind2.fitness.values
-                self.toolbox.mutate(ind1)
-                self.toolbox.mutate(ind2)
+
+                        del ind1.fitness.values, ind2.fitness.values
+                    self.toolbox.mutate(ind1)
+                    self.toolbox.mutate(ind2)
+            else:
+                for ind1, ind2 in zip(self.offspring[::2], self.offspring[1::2]):
+                    if random.random() <= self.cross_prob:
+                        self.toolbox.mate(ind1, ind2)
+
+                        del ind1.fitness.values, ind2.fitness.values
+                    self.toolbox.mutate(ind1)
+                    self.toolbox.mutate(ind2)
 
             # Calculating fitness for all the invalid individuals in offspring
             self.invalid_ind = [ind for ind in self.offspring if not ind.fitness.valid]
@@ -310,12 +312,11 @@ class HMOEA(object):
                 ind.fitness.values = fit
 
             # Use 2 opt to optimize the individual
-            TwoOpt(self.offspring, self.json_instance)
+            if L_S:
+                TwoOpt(self.offspring, self.json_instance)
 
             self.pop = self.toolbox.select(self.pop + self.offspring, self.pop_size)
 
-
-        # reference point (vehicles, total_time, sub_route_max, waiting_time, delay_time)
         print("--- %.2f seconds ---" % (time.time() - start_time))
         
         # Normalize the fitness
@@ -325,7 +326,8 @@ class HMOEA(object):
            
         for ind in self.pop:
             for i, fitness_value in enumerate(ind.fitness.values):
-
+                # Calculate the range of fitness values for this objective in the population
+                # fitness_values = [p.fitness.values[i] for p in self.pop]
                 fitness_range = max(fitness_values[i]) - min(fitness_values[i])
                 if fitness_range == 0:
                     fitness_range += 1
@@ -336,50 +338,84 @@ class HMOEA(object):
         wobj = np.array([ind.fitness.wvalues for ind in front]) * -1
 
 
-        ref = [0.0, 0.0, 0.0, 0.0, 0.0]
-
         hpv = hv.hypervolume(wobj, [1.01, 1.01, 1.01, 1.01, 1.01])
 
-        IGD = igd(wobj, [ref])
     
         print(f"{20 * '#'} End of Generations {20 * '#'} ")
         print("Hypervolume: ",hpv)
-        print('IGD', IGD)
-        return self.pop, hpv, IGD
+        # print('IGD', IGD)
+        return hpv, front
        
 
 
 
-    def runMain(self):
+    def runMain(self, S_M = True, L_S = True):
         self.generatingPopFitness()
-        pop, hpv, IGD = self.runGenerations()
+        hpv, front = self.runGenerations(S_M, L_S)
+        self.getBestInd()
+        self.doExport()
+        return hpv, front
+    
 
-        return pop, hpv, IGD
+# deviation distribution
+def dominates(obj1, obj2):
+    return all(o1 <= o2 for o1, o2 in zip(obj1, obj2))
+def calculate_ratio(former_population, latter_population):
+    dominated_count = 0
+    for latter_solution in latter_population:
+        for former_solution in former_population:
+            if dominates(former_solution.fitness.values, latter_solution.fitness.values):
+                dominated_count += 1
+                break  # Move to the next latter_solution
+
+    return dominated_count / len(latter_population)
 
 
 if __name__ == "__main__":
     
-    hpv_sum = []
-    IGD_sum = []
+    N_hpv_sum = []
+    NH_C_sum = []
+    H_hpv_sum = []
+    HN_C_sum = []
     for _ in range(10):
-        for i in glob('./data/Amazon_data/new_json/A1*'):
-        # for i in glob('./data/json/RC103*'):
+        for i in glob('./data/Amazon_data/TW1_json/A200*'):
+        # for i in glob('./data/json/RC208*'):
             print(i)
             print(f"{20 * '#'} ",i[12:16], f"{20 * '#'} ") 
-            someinstance = HMOEA(i)
-            pop, hpv, IGD = someinstance.runMain()
+
+            NSGA = HMOEA(i)
+            N_hpv, N_front = NSGA.runMain(S_M = False, L_S = False)
             # print(someinstance.runMain())
-            hpv_sum.append(hpv)
-            IGD_sum.append(IGD)
-            del someinstance
+            N_hpv_sum.append(N_hpv)
+            del NSGA
             del creator.FitnessMin
             del creator.Individual
-    print(hpv_sum)
-    print('hpvavg', np.mean(hpv_sum))
-    print('hpvstd', np.std(hpv_sum,ddof=1))
-    print(IGD_sum)
-    print('igdavg', np.mean(IGD_sum))
-    print('igdstd', np.std(IGD_sum,ddof=1))
+
+            HMOEA = HMOEA(i)
+            H_hpv, H_front = HMOEA.runMain()
+            H_hpv_sum.append(H_hpv)
+            del HMOEA
+            del creator.FitnessMin
+            del creator.Individual
+
+
+            c_metric_HN = calculate_ratio(H_front, N_front)
+            c_metric_NH = calculate_ratio(N_front, H_front)
+            NH_C_sum.append(c_metric_NH)
+            HN_C_sum.append(c_metric_HN)
+    print(N_hpv_sum)
+    print('N_hpvavg', np.mean(N_hpv_sum))
+    print('N_hpvstd', np.std(N_hpv_sum,ddof=1))
+    print(H_hpv_sum)
+    print('H_hpvavg', np.mean(H_hpv_sum))
+    print('H_hpvstd', np.std(H_hpv_sum,ddof=1))
+    print(NH_C_sum)
+    print('NH_C_sumavg', np.mean(NH_C_sum))
+    print('NH_C_sumstd', np.std(NH_C_sum,ddof=1))
+    print(HN_C_sum)
+    print('HN_C_sumavg', np.mean(HN_C_sum))
+    print('HN_C_sumstd', np.std(HN_C_sum,ddof=1))
+
 
 
 
